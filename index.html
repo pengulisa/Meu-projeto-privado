@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Fichas de RPG - Com Dado 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .sync-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .sync-indicator.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .mode-btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .tab-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .session-code-area {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .session-code {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e3c72;
+            background: #e3f2fd;
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 10px 0;
+            letter-spacing: 3px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            height: fit-content;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .character-list {
+            margin-top: 20px;
+        }
+
+        .character-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .character-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .character-item.active {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .character-item h3 {
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .character-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .character-item .player-name {
+            font-size: 0.8em;
+            color: #007bff;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #007bff;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .content-area {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ==================== ESTILOS DO DADO 3D ==================== */
+        
+        .dice-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 30px;
+            color: white;
+        }
+
+        .dice-3d-area {
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            margin: 30px 0;
+        }
+
+        .dice-3d {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(-20deg);
+            transition: transform 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .dice-face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border: 3px solid #333;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.1);
+            backface-visibility: visible;
+        }
+
+        .dice-face::before {
+            content: attr(data-value);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Posicionamento das faces do dado */
+        .dice-face:nth-child(1) { transform: rotateY(0deg) translateZ(100px); }
+        .dice-face:nth-child(2) { transform: rotateY(90deg) translateZ(100px); }
+        .dice-face:nth-child(3) { transform: rotateY(180deg) translateZ(100px); }
+        .dice-face:nth-child(4) { transform: rotateY(-90deg) translateZ(100px); }
+        .dice-face:nth-child(5) { transform: rotateX(90deg) translateZ(100px); }
+        .dice-face:nth-child(6) { transform: rotateX(-90deg) translateZ(100px); }
+
+        /* Representação visual com pontos */
+        .dice-dots {
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            gap: 15px;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dice-dot {
+            width: 30px;
+            height: 30px;
+            background: #333;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            justify-self: center;
+            align-self: center;
+        }
+
+        /* Configurações dos pontos para cada face */
+        .face-1 .dice-dot:nth-child(5) { display: block; }
+        .face-1 .dice-dot:not(:nth-child(5)) { display: none; }
+
+        .face-2 .dice-dot:nth-child(1),
+        .face-2 .dice-dot:nth-child(9) { display: block; }
+        .face-2 .dice-dot:not(:nth-child(1)):not(:nth-child(9)) { display: none; }
+
+        .face-3 .dice-dot:nth-child(1),
+        .face-3 .dice-dot:nth-child(5),
+        .face-3 .dice-dot:nth-child(9) { display: block; }
+        .face-3 .dice-dot:not(:nth-child(1)):not(:nth-child(5)):not(:nth-child(9)) { display: none; }
+
+        .face-4 .dice-dot:nth-child(1),
+        .face-4 .dice-dot:nth-child(3),
+        .face-4 .dice-dot:nth-child(7),
+        .face-4 .dice-dot:nth-child(9) { display: block; }
+        .face-4 .dice-dot:not(:nth-child(1)):not(:nth-child(3)):not(:nth-child(7)):not(:nth-child(9)) { display: none; }
+
+        .face-5 .dice-dot:nth-child(1),
+        .face-5 .dice-dot:nth-child(3),
+        .face-5 .dice-dot:nth-child(5),
+        .face-5 .dice-dot:nth-child(7),
+        .face-5 .dice-dot:nth-child(9) { display: block; }
+        .face-5 .dice-dot:not(:nth-child(1)):not(:nth-child(3)):not(:nth-child(5)):not(:nth-child(7)):not(:nth-child(9)) { display: none; }
+
+        .face-6 .dice-dot:nth-child(1),
+        .face-6 .dice-dot:nth-child(3),
+        .face-6 .dice-dot:nth-child(4),
+        .face-6 .dice-dot:nth-child(6),
+        .face-6 .dice-dot:nth-child(7),
+        .face-6 .dice-dot:nth-child(9) { display: block; }
+        .face-6 .dice-dot:not(:nth-child(1)):not(:nth-child(3)):not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(7)):not(:nth-child(9)) { display: none; }
+
+        .dice-roller {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dice-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dice-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .dice-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            background: white;
+        }
+
+        .dice-btn:active {
+            transform: translateY(0);
+        }
+
+        .dice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .roll-result-text {
+            text-align: center;
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            min-height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .roll-result-text.critical {
+            color: #ffd700;
+            animation: pulse 1s infinite;
+        }
+
+        .roll-result-text.fumble {
+            color: #ff4444;
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .modifiers {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modifier-btn {
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modifier-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .roll-history {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .roll-history h3 {
+            margin-bottom: 15px;
+        }
+
+        .roll-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid rgba(255, 255, 255, 0.5);
+            animation: slideInRight 0.3s;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .roll-item.critical {
+            border-left-color: #ffd700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .roll-item.fumble {
+            border-left-color: #ff4444;
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .roll-item .player {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .roll-item .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            float: right;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        input:disabled {
+            background: #e9ecef;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .attribute-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .attribute-box input {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .section-title {
+            color: #1e3c72;
+            font-size: 1.5em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1e3c72;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .attributes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dice-3d {
+                width: 150px;
+                height: 150px;
+            }
+
+            .dice-face {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎲 Sistema de Fichas de RPG</h1>
+            <p>Com Dado 3D Realista</p>
+            <div class="sync-indicator online" id="syncIndicator">
+                🟢 Conectado
+            </div>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="playerModeBtn" onclick="setMode('player')">👤 Jogador</button>
+                <button class="mode-btn" id="masterModeBtn" onclick="setMode('master')">🎭 Mestre</button>
+            </div>
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('characters', event)">📋 Fichas</button>
+                <button class="tab-btn" onclick="switchTab('dice', event)">🎲 Dados</button>
+            </div>
+        </header>
+
+        <div id="sessionCodeArea" class="session-code-area" style="display: none;">
+            <h3>Código da Sessão</h3>
+            <div class="session-code" id="sessionCode">-----</div>
+            <p>Compartilhe este código com seus jogadores</p>
+        </div>
+
+        <!-- Aba de Fichas -->
+        <div id="charactersTab" class="main-content">
+            <div class="sidebar">
+                <h2 style="color: #1e3c72; margin-bottom: 20px;">Personagens</h2>
+                <button class="btn btn-primary" onclick="createNewCharacter()">➕ Novo Personagem</button>
+                <button class="btn btn-secondary" onclick="showJoinSession()">🔗 Entrar em Sessão</button>
+                <div class="character-list" id="characterList"></div>
+            </div>
+
+            <div class="content-area" id="characterSheet">
+                <div style="text-align: center; padding: 60px 20px; color: #666;">
+                    <h2 style="color: #1e3c72; margin-bottom: 10px;">Nenhum personagem selecionado</h2>
+                    <p>Crie um novo personagem ou selecione um existente da lista</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba de Dados -->
+        <div id="diceTab" class="content-area" style="display: none;">
+            <div class="dice-container">
+                <h2 style="margin-bottom: 25px;">🎲 Rolagem de Dados 3D</h2>
+                
+                <div class="dice-roller">
+                    <h3 style="margin-bottom: 15px;">Escolha o Dado</h3>
+                    <div class="dice-buttons">
+                        <button class="dice-btn" onclick="rollDice(4)">d4</button>
+                        <button class="dice-btn" onclick="rollDice(6)">d6</button>
+                        <button class="dice-btn" onclick="rollDice(8)">d8</button>
+                        <button class="dice-btn" onclick="rollDice(10)">d10</button>
+                        <button class="dice-btn" onclick="rollDice(12)">d12</button>
+                        <button class="dice-btn" onclick="rollDice(20)">d20</button>
+                        <button class="dice-btn" onclick="rollDice(100)">d100</button>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px; margin-top: 20px;">Modificadores</h3>
+                    <div class="modifiers">
+                        <button class="modifier-btn" onclick="toggleModifier(-5)">-5</button>
+                        <button class="modifier-btn" onclick="toggleModifier(-3)">-3</button>
+                        <button class="modifier-btn" onclick="toggleModifier(-1)">-1</button>
+                        <button class="modifier-btn" onclick="toggleModifier(1)">+1</button>
+                        <button class="modifier-btn" onclick="toggleModifier(3)">+3</button>
+                        <button class="modifier-btn" onclick="toggleModifier(5)">+5</button>
+                        <button class="modifier-btn" onclick="resetModifier()">Limpar</button>
+                    </div>
+                </div>
+
+                <!-- Dado 3D -->
+                <div class="dice-3d-area">
+                    <div class="dice-3d" id="dice3d">
+                        <div class="dice-face face-1" data-value="1">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                        <div class="dice-face face-2" data-value="2">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                        <div class="dice-face face-3" data-value="3">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                        <div class="dice-face face-4" data-value="4">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                        <div class="dice-face face-5" data-value="5">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                        <div class="dice-face face-6" data-value="6">
+                            <div class="dice-dots">
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                                <div class="dice-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roll-result-text" id="rollResultText">
+                    Clique em um dado para rolar!
+                </div>
+
+                <div class="roll-history">
+                    <h3>📜 Histórico de Rolagens</h3>
+                    <div id="rollHistoryList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para entrar em sessão -->
+    <div class="modal" id="joinModal">
+        <div class="modal-content">
+            <h2>Entrar em Sessão</h2>
+            <div class="form-group">
+                <label>Código da Sessão</label>
+                <input type="text" id="joinSessionCode" placeholder="Digite o código">
+            </div>
+            <div class="form-group">
+                <label>Seu Nome</label>
+                <input type="text" id="playerName" placeholder="Digite seu nome">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="joinSession()">Entrar</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== VARIÁVEIS GLOBAIS ====================
+        let characters = [];
+        let currentCharacterId = null;
+        let currentMode = 'player';
+        let sessionCode = null;
+        let playerName = null;
+        let isReadOnly = false;
+        let syncInterval = null;
+        let currentTab = 'characters';
+        let currentModifier = 0;
+        let rollHistory = [];
+        let isRolling = false;
+
+        // Rotações para cada face do d6
+        const diceRotations = {
+            1: { x: 0, y: 0, z: 0 },
+            2: { x: 0, y: -90, z: 0 },
+            3: { x: 0, y: 180, z: 0 },
+            4: { x: 0, y: 90, z: 0 },
+            5: { x: -90, y: 0, z: 0 },
+            6: { x: 90, y: 0, z: 0 }
+        };
+
+        // ==================== FUNÇÕES DE NAVEGAÇÃO ====================
+
+        function switchTab(tab, event) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            document.getElementById('charactersTab').style.display = tab === 'characters' ? 'grid' : 'none';
+            document.getElementById('diceTab').style.display = tab === 'dice' ? 'block' : 'none';
+
+            if (tab === 'dice') {
+                loadRollHistory();
+            }
+        }
+
+        // ==================== FUNÇÕES DOS DADOS ====================
+
+        function rollDice(sides) {
+            if (isRolling) return;
+            
+            if (sides === 6) {
+                rollD6();
+                return;
+            }
+            
+            isRolling = true;
+            disableButtons();
+            
+            const result = Math.floor(Math.random() * sides) + 1;
+            const total = result + currentModifier;
+            
+            let isCritical = false;
+            let isFumble = false;
+            if (sides === 20) {
+                isCritical = result === 20;
+                isFumble = result === 1;
+            }
+            
+            const resultText = document.getElementById('rollResultText');
+            resultText.textContent = '🎲 Rolando...';
+            resultText.className = 'roll-result-text';
+            
+            // Animação para outros dados
+            const dice = document.getElementById('dice3d');
+            dice.style.transform = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg) rotateZ(${Math.random() * 360}deg)`;
+            
+            setTimeout(() => {
+                dice.style.transform = 'rotateX(-20deg) rotateY(-20deg)';
+                displayResult(sides, result, total, isCritical, isFumble);
+                saveRollToHistory([result], sides, total, isCritical, isFumble);
+                isRolling = false;
+                enableButtons();
+            }, 1000);
+        }
+
+        function rollD6() {
+            if (isRolling) return;
+            
+            isRolling = true;
+            disableButtons();
+            
+            const result = Math.floor(Math.random() * 6) + 1;
+            const total = result + currentModifier;
+            
+            const dice = document.getElementById('dice3d');
+            const resultText = document.getElementById('rollResultText');
+            
+            resultText.textContent = '🎲 Rolando...';
+            resultText.className = 'roll-result-text';
+            
+            // Animação com múltiplas voltas
+            const spins = 3 + Math.floor(Math.random() * 3);
+            const finalRotation = diceRotations[result];
+            
+            const totalX = (360 * spins) + finalRotation.x;
+            const totalY = (360 * spins) + finalRotation.y;
+            const totalZ = (360 * spins) + finalRotation.z;
+            
+            dice.style.transform = `rotateX(${totalX}deg) rotateY(${totalY}deg) rotateZ(${totalZ}deg)`;
+            
+            setTimeout(() => {
+                displayResult(6, result, total, false, false);
+                saveRollToHistory([result], 6, total, false, false);
+                isRolling = false;
+                enableButtons();
+            }, 1500);
+        }
+
+        function displayResult(sides, result, total, isCritical, isFumble) {
+            const resultText = document.getElementById('rollResultText');
+            
+            let message = '';
+            let className = 'roll-result-text';
+            
+            if (isCritical) {
+                message = `🎉 CRÍTICO! ${total}`;
+                className += ' critical';
+            } else if (isFumble) {
+                message = `💥 FALHA! ${total}`;
+                className += ' fumble';
+            } else {
+                const modText = currentModifier !== 0 ? ` (${result}${currentModifier > 0 ? '+' : ''}${currentModifier})` : '';
+                message = `Resultado: ${total}${modText}`;
+            }
+            
+            resultText.textContent = message;
+            resultText.className = className;
+        }
+
+        function disableButtons() {
+            document.querySelectorAll('.dice-btn, .modifier-btn').forEach(btn => {
+                if (btn.textContent !== 'Limpar') {
+                    btn.disabled = true;
+                }
+            });
+        }
+
+        function enableButtons() {
+            document.querySelectorAll('.dice-btn, .modifier-btn').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+
+        function toggleModifier(value) {
+            currentModifier = currentModifier === value ? 0 : value;
+            updateModifierButtons();
+        }
+
+        function resetModifier() {
+            currentModifier = 0;
+            updateModifierButtons();
+        }
+
+        function updateModifierButtons() {
+            document.querySelectorAll('.modifier-btn').forEach(btn => {
+                const text = btn.textContent;
+                if (text === 'Limpar') return;
+                const value = parseInt(text);
+                btn.classList.toggle('active', value === currentModifier);
+            });
+        }
+
+        function saveRollToHistory(rolls, sides, total, isCritical, isFumble) {
+            const roll = {
+                player: playerName || 'Jogador',
+                rolls: rolls,
+                sides: sides,
+                total: total,
+                modifier: currentModifier,
+                critical: isCritical,
+                fumble: isFumble,
+                timestamp: new Date().toLocaleTimeString('pt-BR')
+            };
+            
+            rollHistory.unshift(roll);
+            
+            if (rollHistory.length > 50) {
+                rollHistory = rollHistory.slice(0, 50);
+            }
+            
+            // Salvar no localStorage
+            if (sessionCode) {
+                localStorage.setItem(`rolls_${sessionCode}`, JSON.stringify(rollHistory));
+            }
+            
+            renderRollHistory();
+        }
+
+        function loadRollHistory() {
+            if (!sessionCode) return;
+            
+            try {
+                const saved = localStorage.getItem(`rolls_${sessionCode}`);
+                if (saved) {
+                    rollHistory = JSON.parse(saved);
+                    renderRollHistory();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+            }
+        }
+
+        function renderRollHistory() {
+            const historyDiv = document.getElementById('rollHistoryList');
+            
+            if (rollHistory.length === 0) {
+                historyDiv.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 20px;">Nenhuma rolagem ainda</div>';
+                return;
+            }
+            
+            historyDiv.innerHTML = rollHistory.map(roll => {
+                const className = roll.critical ? 'critical' : (roll.fumble ? 'fumble' : '');
+                const label = roll.critical ? '🎉 CRÍTICO!' : (roll.fumble ? '💥 FALHA!' : '');
+                const modText = roll.modifier !== 0 ? ` ${roll.modifier > 0 ? '+' : ''}${roll.modifier}` : '';
+                
+                return `
+                    <div class="roll-item ${className}">
+                        <span class="player">${roll.player}</span>
+                        <span class="timestamp">${roll.timestamp}</span>
+                        <div>
+                            ${label ? `<strong>${label}</strong> ` : ''}
+                            <strong>${roll.total}</strong> = 1d${roll.sides}${modText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== FUNÇÕES DE PERSONAGENS ====================
+
+        function generateSessionCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('playerModeBtn').classList.toggle('active', mode === 'player');
+            document.getElementById('masterModeBtn').classList.toggle('active', mode === 'master');
+
+            if (mode === 'master') {
+                if (!sessionCode) {
+                    sessionCode = generateSessionCode();
+                    localStorage.setItem('sessionCode', sessionCode);
+                }
+                document.getElementById('sessionCodeArea').style.display = 'block';
+                document.getElementById('sessionCode').textContent = sessionCode;
+            } else {
+                document.getElementById('sessionCodeArea').style.display = 'none';
+            }
+
+            loadCharacters();
+        }
+
+        function loadCharacters() {
+            const saved = localStorage.getItem('rpgCharacters');
+            if (saved) {
+                characters = JSON.parse(saved);
+            }
+            renderCharacterList();
+        }
+
+        function saveCharacters() {
+            localStorage.setItem('rpgCharacters', JSON.stringify(characters));
+        }
+
+        function createNewCharacter() {
+            const newCharacter = {
+                id: Date.now(),
+                name: 'Novo Personagem',
+                race: '',
+                class: '',
+                level: 1,
+                hp: 10,
+                maxHp: 10,
+                armor: 10,
+                initiative: 0,
+                playerName: playerName,
+                attributes: {
+                    strength: 10,
+                    dexterity: 10,
+                    constitution: 10,
+                    intelligence: 10,
+                    wisdom: 10,
+                    charisma: 10
+                }
+            };
+
+            characters.push(newCharacter);
+            saveCharacters();
+            renderCharacterList();
+            selectCharacter(newCharacter.id);
+            showNotification('✨ Personagem criado!');
+        }
+
+        function renderCharacterList() {
+            const list = document.getElementById('characterList');
+            list.innerHTML = '';
+
+            let displayChars = characters;
+            if (currentMode === 'player' && playerName) {
+                displayChars = characters.filter(c => !c.playerName || c.playerName === playerName);
+            }
+
+            displayChars.forEach(char => {
+                const item = document.createElement('div');
+                item.className = `character-item ${char.id === currentCharacterId ? 'active' : ''}`;
+                item.onclick = () => selectCharacter(char.id);
+                item.innerHTML = `
+                    <h3>${char.name}</h3>
+                    <p>${char.race || 'Raça'} ${char.class || 'Classe'} - Nível ${char.level}</p>
+                    ${char.playerName ? `<div class="player-name">👤 ${char.playerName}</div>` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function selectCharacter(id) {
+            currentCharacterId = id;
+            const character = characters.find(c => c.id === id);
+            if (character) {
+                isReadOnly = currentMode === 'master' || (playerName && character.playerName && character.playerName !== playerName);
+                renderCharacterSheet(character);
+                renderCharacterList();
+            }
+        }
+
+        function calculateModifier(value) {
+            return Math.floor((value - 10) / 2);
+        }
+
+        function renderCharacterSheet(character) {
+            const disabled = isReadOnly ? 'disabled' : '';
+            
+            const sheet = document.getElementById('characterSheet');
+            sheet.innerHTML = `
+                <h2 class="section-title">Informações Básicas</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" value="${character.name}" onchange="updateCharacter('name', this.value)" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>Raça</label>
+                        <input type="text" value="${character.race || ''}" onchange="updateCharacter('race', this.value)" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>Classe</label>
+                        <input type="text" value="${character.class || ''}" onchange="updateCharacter('class', this.value)" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>Nível</label>
+                        <input type="number" min="1" value="${character.level}" onchange="updateCharacter('level', parseInt(this.value))" ${disabled}>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Combate</h2>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                    <div class="form-group">
+                        <label>HP</label>
+                        <input type="number" value="${character.hp}" onchange="updateCharacter('hp', parseInt(this.value))" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>HP Máx</label>
+                        <input type="number" value="${character.maxHp}" onchange="updateCharacter('maxHp', parseInt(this.value))" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>CA</label>
+                        <input type="number" value="${character.armor}" onchange="updateCharacter('armor', parseInt(this.value))" ${disabled}>
+                    </div>
+                    <div class="form-group">
+                        <label>Iniciativa</label>
+                        <input type="number" value="${character.initiative}" onchange="updateCharacter('initiative', parseInt(this.value))" ${disabled}>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Atributos</h2>
+                <div class="attributes-grid">
+                    ${['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].map(attr => {
+                        const names = { strength: 'FOR', dexterity: 'DES', constitution: 'CON', intelligence: 'INT', wisdom: 'SAB', charisma: 'CAR' };
+                        const val = character.attributes[attr] || 10;
+                        const mod = calculateModifier(val);
+                        return `
+                            <div class="attribute-box">
+                                <label>${names[attr]}</label>
+                                <input type="number" value="${val}" onchange="updateAttribute('${attr}', parseInt(this.value))" ${disabled}>
+                                <p style="margin-top: 5px; color: #666;">Mod: ${mod >= 0 ? '+' : ''}${mod}</p>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function updateCharacter(field, value) {
+            if (isReadOnly) return;
+            const character = characters.find(c => c.id === currentCharacterId);
+            if (character) {
+                character[field] = value;
+                saveCharacters();
+                renderCharacterList();
+            }
+        }
+
+        function updateAttribute(attr, value) {
+            if (isReadOnly) return;
+            const character = characters.find(c => c.id === currentCharacterId);
+            if (character) {
+                character.attributes[attr] = value;
+                saveCharacters();
+                selectCharacter(currentCharacterId);
+            }
+        }
+
+        function showJoinSession() {
+            document.getElementById('joinModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('joinModal').classList.remove('active');
+        }
+
+        function joinSession() {
+            const code = document.getElementById('joinSessionCode').value.trim().toUpperCase();
+            const name = document.getElementById('playerName').value.trim();
+
+            if (!code || !name) {
+                alert('Preencha todos os campos');
+                return;
+            }
+
+            sessionCode = code;
+            playerName = name;
+            localStorage.setItem('playerName', playerName);
+            localStorage.setItem('currentSession', sessionCode);
+
+            closeModal();
+            loadCharacters();
+            loadRollHistory();
+            showNotification(`✅ Conectado à sessão ${sessionCode}`);
+        }
+
+        // ==================== INICIALIZAÇÃO ====================
+        
+        // Carregar dados salvos
+        const savedSession = localStorage.getItem('currentSession');
+        const savedPlayerName = localStorage.getItem('playerName');
+        const savedSessionCode = localStorage.getItem('sessionCode');
+
+        if (savedPlayerName) playerName = savedPlayerName;
+        if (savedSession) sessionCode = savedSession;
+        if (savedSessionCode) sessionCode = savedSessionCode;
+
+        loadCharacters();
+        
+        if (sessionCode) {
+            loadRollHistory();
+        }
+
+        // Atualizar indicador de modo
+        setMode('player');
+    </script>
+</body>
+</html>
