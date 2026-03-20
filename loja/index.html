@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MinhaLoja — Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">Minha<span>Loja</span></div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div class="date-badge" id="dateDisplay"></div>
+    <button class="btn btn-success btn-sm" onclick="fecharDia()" style="font-size:.75rem;">✅ Fechar Dia</button>
+  </div>
+</header>
+
+<main>
+  <!-- CARDS RESUMO -->
+  <div class="summary">
+    <div class="card">
+      <div class="card-label">Total de Vendas</div>
+      <div class="card-value yellow" id="totalVendas">R$ 0,00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Ganhos (Lucro)</div>
+      <div class="card-value green" id="totalGanhos">R$ 0,00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Perdas / Gastos</div>
+      <div class="card-value red" id="totalPerdas">R$ 0,00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Produtos Cadastrados</div>
+      <div class="card-value" id="totalProdutos">0</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('produtos')">📦 Produtos</button>
+    <button class="tab" onclick="showTab('vendas')">🛒 Vendas</button>
+    <button class="tab" onclick="showTab('perdas')">📉 Perdas</button>
+    <button class="tab" onclick="showTab('historico')">📋 Histórico</button>
+  </div>
+
+  <!-- PAINEL PRODUTOS -->
+  <div class="panel active" id="tab-produtos">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome do Produto</label>
+        <input type="text" id="prodNome" placeholder="Ex: Camiseta P">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <input type="text" id="prodCategoria" placeholder="Ex: Roupas">
+      </div>
+      <div class="form-group">
+        <label>Preço de Custo (R$)</label>
+        <input type="number" id="prodCusto" placeholder="0,00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Preço de Venda (R$)</label>
+        <input type="number" id="prodVenda" placeholder="0,00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Estoque</label>
+        <input type="number" id="prodEstoque" placeholder="0" min="0">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn btn-primary" onclick="adicionarProduto()">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search-bar" type="text" placeholder="🔍 Buscar produto..." oninput="renderProdutos(this.value)">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Custo</th>
+            <th>Venda</th>
+            <th>Margem</th>
+            <th>Estoque</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaProdutos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAINEL VENDAS -->
+  <div class="panel" id="tab-vendas">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Produto</label>
+        <select id="vendaProduto">
+          <option value="">Selecionar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quantidade</label>
+        <input type="number" id="vendaQtd" placeholder="1" min="1" value="1">
+      </div>
+      <div class="form-group">
+        <label>Preço de Venda (R$)</label>
+        <input type="number" id="vendaPreco" placeholder="0,00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Observação</label>
+        <input type="text" id="vendaObs" placeholder="Opcional">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn btn-success" onclick="registrarVenda()">💰 Registrar Venda</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th><th>Lucro</th></tr>
+        </thead>
+        <tbody id="tabelaVendas"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAINEL PERDAS -->
+  <div class="panel" id="tab-perdas">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" id="perdaDesc" placeholder="Ex: Produto danificado">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="perdaTipo">
+          <option value="Perda de Produto">Perda de Produto</option>
+          <option value="Gasto Operacional">Gasto Operacional</option>
+          <option value="Devolução">Devolução</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="perdaValor" placeholder="0,00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Observação</label>
+        <input type="text" id="perdaObs" placeholder="Opcional">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn btn-danger" onclick="registrarPerda()">📉 Registrar Perda</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Obs</th><th>Ação</th></tr>
+        </thead>
+        <tbody id="tabelaPerdas"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAINEL HISTÓRICO -->
+  <div class="panel" id="tab-historico">
+    <div class="toolbar">
+      <span style="font-size:.8rem; color:var(--muted);">Todas as movimentações registradas</span>
+      <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data/Hora</th><th>Tipo</th><th>Descrição</th><th>Valor</th><th>Resultado</th><th>Status</th></tr>
+        </thead>
+        <tbody id="tabelaHistorico"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL EDITAR PRODUTO -->
+<div class="modal-backdrop" id="modalEdit">
+  <div class="modal">
+    <h3>✏️ Editar Produto</h3>
+    <input type="hidden" id="editId">
+    <div class="form-grid" style="padding:0; background:none; border:none; margin-bottom:0;">
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" id="editNome">
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <input type="text" id="editCategoria">
+      </div>
+      <div class="form-group">
+        <label>Preço de Custo (R$)</label>
+        <input type="number" id="editCusto" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Preço de Venda (R$)</label>
+        <input type="number" id="editVenda" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Estoque</label>
+        <input type="number" id="editEstoque" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEdicao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
