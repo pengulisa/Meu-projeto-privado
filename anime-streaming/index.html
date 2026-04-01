@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeFlix - Assistir Animes Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-play-circle"></i>
+                <h1>AnimeFlix</h1>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="#" class="nav-link active">Início</a></li>
+                    <li><a href="#" class="nav-link">Animes</a></li>
+                    <li><a href="#" class="nav-link">Gêneros</a></li>
+                    <li><a href="#" class="nav-link">Favoritos</a></li>
+                </ul>
+            </nav>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Buscar anime dublado ou legendado...">
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="filter-toggle">
+                    <select id="languageFilter">
+                        <option value="all">Todos</option>
+                        <option value="dub">Dublado</option>
+                        <option value="sub">Legendado</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="hero">
+                <div class="hero-content">
+                    <h2>Assista aos melhores animes online</h2>
+                    <p>Encontre seus animes favoritos dublados ou legendados</p>
+                    <div class="hero-search">
+                        <input type="text" placeholder="Digite o nome do anime..." id="heroSearch">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="featured">
+                <h3>Em Destaque</h3>
+                <div class="anime-grid" id="featuredAnimes">
+                    <!-- Animes em destaque serão inseridos aqui -->
+                </div>
+            </section>
+
+            <section class="search-results hidden" id="searchResults">
+                <h3>Resultados da Busca</h3>
+                <div class="anime-grid" id="resultsGrid">
+                    <!-- Resultados da busca serão inseridos aqui -->
+                </div>
+            </section>
+
+            <section class="anime-details hidden" id="animeDetails">
+                <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <div class="anime-info">
+                    <div class="anime-poster">
+                        <img id="animePoster" src="" alt="">
+                    </div>
+                    <div class="anime-meta">
+                        <h2 id="animeTitle"></h2>
+                        <div class="anime-tags">
+                            <span class="tag" id="animeType"></span>
+                            <span class="tag" id="animeYear"></span>
+                            <span class="tag" id="animeLanguage"></span>
+                        </div>
+                        <p id="animeDescription"></p>
+                        <div class="anime-stats">
+                            <span><i class="fas fa-star"></i> <span id="animeRating"></span></span>
+                            <span><i class="fas fa-eye"></i> <span id="animeViews"></span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="episodes-section">
+                    <h3>Episódios</h3>
+                    <div class="seasons-tabs" id="seasonsTabs">
+                        <!-- Abas de temporadas serão inseridas aqui -->
+                    </div>
+                    <div class="episodes-grid" id="episodesGrid">
+                        <!-- Episódios serão inseridos aqui -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- PLAYER: substituído de <video> para <iframe> para suportar embeds externos -->
+            <section class="video-player hidden" id="videoPlayer">
+                <button class="back-btn" id="playerBackBtn"><i class="fas fa-arrow-left"></i> Voltar</button>
+                <div class="player-container">
+                    <div class="video-wrapper">
+                        <div id="playerWrapper">
+                            <!-- O iframe ou video será inserido dinamicamente aqui -->
+                        </div>
+                    </div>
+                    <div class="player-info">
+                        <h3 id="playerTitle"></h3>
+                        <p id="playerEpisode"></p>
+                        <div id="playerSourceInfo" class="episode-source"></div>
+                        <div id="playerErrorMsg"></div>
+                    </div>
+                </div>
+                <div class="episode-list-sidebar">
+                    <h4>Lista de Episódios</h4>
+                    <div id="sidebarEpisodes"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 AnimeFlix. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script-universal.js"></script>
+</body>
+</html>
